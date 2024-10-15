@@ -1,8 +1,4 @@
-print("hello,world")
-print("こんにちは")
-print("おはようございます")
-print("これは削除予定です")
-
+"""
 # リモートリポジトリへプッシュする手順
 
 # 1. 変更をステージングエリアに追加する
@@ -30,3 +26,12 @@ print("これは削除予定です")
 # git pull origin ブランチ名
 # 例:
 # git pull origin main
+
+"""
+
+print("hello,world")
+print("こんにちは")
+print("おはようございます")
+print("これは削除予定です")
+
+print("今日は2024-10-16です")
