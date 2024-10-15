@@ -15,6 +15,9 @@ pygame.display.set_caption("ブラックジャック")
 GREEN = (0, 128, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GRAY = (169, 169, 169)
+LIGHT_GRAY = (211, 211, 211)
+RED = (255, 0, 0)
 
 # フォントの設定
 FONT = pygame.font.SysFont('arial', 24)
@@ -46,7 +49,7 @@ for suit in suits:
             image = pygame.transform.scale(image, (80, 120))
             card_images[card_name] = image
         except:
-            # 画像が見つからない場合、テキストを描画
+            # 画像が見つからない場合、Noneを設定
             card_images[card_name] = None
 
 class Card:
@@ -94,6 +97,21 @@ def draw_text(text, font, color, surface, x, y):
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
+def draw_button(surface, rect, text, color, hover_color, font):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+
+    if rect.collidepoint(mouse):
+        pygame.draw.rect(surface, hover_color, rect)
+    else:
+        pygame.draw.rect(surface, color, rect)
+
+    pygame.draw.rect(surface, BLACK, rect, 2)  # ボーダー
+
+    text_surf = font.render(text, True, BLACK)
+    text_rect = text_surf.get_rect(center=rect.center)
+    surface.blit(text_surf, text_rect)
+
 def main():
     clock = pygame.time.Clock()
     deck = Deck()
@@ -110,20 +128,30 @@ def main():
     dealer_bust = False
     result = ""
 
+    # ボタンの設定
+    button_width, button_height = 150, 50
+    hit_button = pygame.Rect(200, 500, button_width, button_height)
+    stand_button = pygame.Rect(400, 500, button_width, button_height)
+    new_game_button = pygame.Rect(600, 500, button_width, button_height)
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-            if not game_over:
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_h:  # ヒット
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_pos = event.pos
+
+                if not game_over:
+                    if hit_button.collidepoint(mouse_pos):
+                        # ヒット
                         player_hand.add_card(deck.deal_one())
                         if player_hand.value > 21:
                             player_bust = True
                             game_over = True
-                    if event.key == pygame.K_s:  # スタンド
+                    elif stand_button.collidepoint(mouse_pos):
+                        # スタンド
                         # ディーラーのターン
                         while dealer_hand.value < 17:
                             dealer_hand.add_card(deck.deal_one())
@@ -137,6 +165,19 @@ def main():
                         elif dealer_hand.value == player_hand.value:
                             result = "引き分けです。"
                         game_over = True
+                else:
+                    if new_game_button.collidepoint(mouse_pos):
+                        # 新しいゲーム
+                        deck = Deck()
+                        player_hand = Hand()
+                        dealer_hand = Hand()
+                        for _ in range(2):
+                            player_hand.add_card(deck.deal_one())
+                            dealer_hand.add_card(deck.deal_one())
+                        game_over = False
+                        player_bust = False
+                        dealer_bust = False
+                        result = ""
 
         # 画面の描画
         screen.fill(GREEN)
@@ -145,6 +186,7 @@ def main():
         draw_text("ディーラーの手:", FONT, WHITE, screen, 50, 50)
         for i, card in enumerate(dealer_hand.cards):
             if i == 0 and not game_over:
+                # 最初のカードを裏向きに表示
                 pygame.draw.rect(screen, WHITE, (50 + i*90, 80, 80, 120))
                 draw_text("裏向き", FONT, BLACK, screen, 50 + i*90 + 10, 80 + 50)
             else:
@@ -173,30 +215,38 @@ def main():
             elif dealer_bust:
                 result = "ディーラーがバーストしました。プレイヤーの勝ちです！"
             draw_text(result, BIG_FONT, WHITE, screen, 50, 450)
-
-            draw_text("新しいゲーム: Rキー", FONT, WHITE, screen, 50, 500)
-
+        
+        # ボタンの描画
+        if not game_over:
+            # ヒットとスタンドのボタンを表示
+            draw_button(screen, hit_button, "ヒット", LIGHT_GRAY, GRAY, FONT)
+            draw_button(screen, stand_button, "スタンド", LIGHT_GRAY, GRAY, FONT)
+            # 新しいゲームボタンは非表示
         else:
-            # ヒットとスタンドの指示
-            draw_text("ヒット: Hキー | スタンド: Sキー", FONT, WHITE, screen, 50, 500)
+            # 新しいゲームのボタンを表示
+            draw_button(screen, new_game_button, "新しいゲーム", LIGHT_GRAY, GRAY, FONT)
+
+        # 結果の表示
+        if game_over:
+            if player_bust:
+                result = "プレイヤーがバーストしました。ディーラーの勝ちです！"
+            elif dealer_bust:
+                result = "ディーラーがバーストしました。プレイヤーの勝ちです！"
+            draw_text(result, BIG_FONT, WHITE, screen, 50, 450)
 
         pygame.display.flip()
         clock.tick(30)
 
-        # 新しいゲームの開始
-        if game_over:
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_r]:
-                deck = Deck()
-                player_hand = Hand()
-                dealer_hand = Hand()
-                for _ in range(2):
-                    player_hand.add_card(deck.deal_one())
-                    dealer_hand.add_card(deck.deal_one())
-                game_over = False
-                player_bust = False
-                dealer_bust = False
-                result = ""
+def draw_button(surface, rect, text, color, hover_color, font):
+    mouse = pygame.mouse.get_pos()
+    if rect.collidepoint(mouse):
+        pygame.draw.rect(surface, hover_color, rect)
+    else:
+        pygame.draw.rect(surface, color, rect)
+    pygame.draw.rect(surface, BLACK, rect, 2)  # ボーダー
+    text_surf = font.render(text, True, BLACK)
+    text_rect = text_surf.get_rect(center=rect.center)
+    surface.blit(text_surf, text_rect)
 
 if __name__ == "__main__":
     main()
