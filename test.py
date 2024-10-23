@@ -29,10 +29,25 @@
 
 """
 
-print("hello,world")
-print("こんにちは")
-print("おはようございます")
-print("これは削除予定です")
+class Dog:
+    def __init__(self, name, age):
+        self.name = name  # オブジェクトの名前を設定
+        self.age = age    # オブジェクトの年齢を設定
 
-print("今日は2024-10-16です")
-print("行を追加しました")
+    def bark(self):
+        print(f"{self.name} says: Woof!")
+
+if __name__ == "__main__":
+    # Dogクラスのインスタンスを作成
+    my_dog = Dog("ぴりか", 8)
+    
+    # 属性にアクセスして表示
+    print(f"My dog's name is {my_dog.name} and he is {my_dog.age} years old.")
+    
+    # メソッドを呼び出す
+    my_dog.bark()
+    
+    # 別のインスタンスを作成してテスト
+    another_dog = Dog("Max", 5)
+    print(f"Another dog's name is {another_dog.name} and he is {another_dog.age} years old.")
+    another_dog.bark()
