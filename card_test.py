@@ -6,12 +6,15 @@
 - トランプの画像をまだ、選択できない。
 - スペードのエースを表示させることはできた。
 
+2024-11-06
+- リロードして、カード表示を切り替える機能を実装した
+
 """
 
 
 import pygame
 import os
-import pygame_menu
+import random
 
 # Pygameの初期化
 pygame.init()
@@ -27,7 +30,7 @@ card_images = {}
 suits = ["hearts", "diamonds", "clubs", "spades"]
 values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king", "ace"]
 
-# コード挿入：トランプ関数
+# トランプ関数：すべてのカード画像を読み込み
 for suit in suits:
     for value in values:
         card_name = f"{value}_of_{suit}.png"
@@ -35,46 +38,45 @@ for suit in suits:
         if os.path.exists(image_path):
             card_images[f"{value}_{suit}"] = pygame.image.load(image_path)
 
-#挿入：終わり
+# リロードボタンの設定
+button_color = (200, 200, 200)
+button_rect = pygame.Rect(650, 500, 120, 50)
+button_text = "Reload"
 
-"""
-ここから先は、ChatGPTの提示したコード
-"""
-# ウィンドウを開いたままにするためのメインループ
+# ランダムカードを選択するフラグ
+card_selected = False
+selected_card_key = None
+
+# メインループ
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if button_rect.collidepoint(event.pos):
+                card_selected = False  # リロードボタンがクリックされたらランダム選択を再開
 
-    screen.fill((0, 128, 0))  # 必要に応じて画面を更新する
+    # 背景を緑色に設定（テーブルの色）
+    screen.fill((0, 128, 0))
 
-#コードを挿入:任意のカード画像を表示（例：スペードのエース）
-    card_key = "ace_spades"
-    if card_key in card_images:
-        card_image = card_images[card_key]
+    # カードを表示
+    if not card_selected and card_images:
+        selected_card_key = random.choice(list(card_images.keys()))
+        card_selected = True
+
+    if card_selected and selected_card_key:
+        card_image = card_images[selected_card_key]
         screen.blit(card_image, (100, 100))  # カード画像を位置 (100, 100) に描画
 
-#挿入：終わり
+    # リロードボタンを描画
+    pygame.draw.rect(screen, button_color, button_rect)
+    font = pygame.font.Font(None, 36)
+    text_surface = font.render(button_text, True, (0, 0, 0))
+    screen.blit(text_surface, (button_rect.x + 10, button_rect.y + 10))
 
-    pygame.display.flip()  # 画面を更新
-
-pygame.quit()
-
-
-"""
-ここから先は、オリジナル
-
-
-# メインループ
-running = True
-while running:
-    screen.fill((0, 128, 0))  # 背景を緑色に設定（テーブルの色）
-
-    # 画面の更新
+    # 画面を更新
     pygame.display.flip()
 
 # Pygameの終了処理
 pygame.quit()
-
-"""
